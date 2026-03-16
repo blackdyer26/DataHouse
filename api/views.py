@@ -5,7 +5,7 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework import status
 from .models import Dataset, PipelineRun
 from .serializers import DatasetSerializer, PipelineRunSerializer
-from .tasks import run_autogluon_evaluation
+from .tasks import run_autogluon_evaluation, clean_and_preprocess_data
 
 class DatasetUploadView(APIView):
     parser_classes = (MultiPartParser, FormParser)
@@ -65,7 +65,7 @@ class DatasetUploadView(APIView):
                 run.save()
 
                 # Trigger the Background ML Training
-                run_autogluon_evaluation.delay(str(run.id), target_col, task_type)
+                clean_and_preprocess_data.delay(str(run.id), target_col, task_type)
 
                 return Response({
                     "dataset_id": dataset.id,
