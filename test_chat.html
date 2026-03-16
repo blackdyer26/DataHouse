@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>DataHouse Chat Tester</title>
+    <style>
+        body { font-family: sans-serif; background-color: #FFFFFF; color: #000000; padding: 20px; }
+        input { padding: 10px; margin: 5px 0; width: 400px; border: 1px solid #ccc; }
+        button { padding: 10px 20px; background-color: #007BFF; color: white; border: none; cursor: pointer; }
+        #log { background: #F8F9FA; padding: 15px; border-left: 4px solid #007BFF; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <h2>DataHouse Chat Middleware Tester</h2>
+    
+    <label>1. Paste your run_id from the curl response:</label><br>
+    <input type="text" id="runId" placeholder="e.g., f5346065-9cf7-4a36-a3aa-b284a0db4dfa"><br><br>
+    
+    <label>2. Type your @layer command:</label><br>
+    <input type="text" id="msg" value="@problem_detector change target to age"><br><br>
+    
+    <button onclick="sendMessage()">Send Command</button>
+    
+    <div id="log"><strong>Middleware Responses:</strong></div>
+
+    <script>
+        // Connect to your Django Channels WebSocket
+        const chatSocket = new WebSocket('ws://127.0.0.1:8000/ws/chat/middleware/');
+        
+        chatSocket.onopen = function(e) {
+            document.getElementById('log').innerHTML += "<br><span style='color:green;'>[Connected to DataHouse WebSocket]</span>";
+        };
+
+        chatSocket.onmessage = function(e) {
+            const data = JSON.parse(e.data);
+            document.getElementById('log').innerHTML += "<br><strong>System:</strong> " + data.message;
+        };
+
+        chatSocket.onclose = function(e) {
+            document.getElementById('log').innerHTML += "<br><span style='color:red;'>[Disconnected]</span>";
+        };
+
+        function sendMessage() {
+            const run_id = document.getElementById('runId').value;
+            const message = document.getElementById('msg').value;
+            chatSocket.send(JSON.stringify({
+                'run_id': run_id,
+                'message': message
+            }));
+        }
+    </script>
+</body>
+</html>
